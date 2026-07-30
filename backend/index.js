@@ -1,8 +1,8 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 
+const db = require('./db');
 const authRoutes = require('./routes/authRoutes');
 const bookRoutes = require('./routes/bookRoutes');
 
@@ -12,20 +12,19 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Database connection
+// Database connection verification
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/bibliotech';
 
-mongoose.connect(MONGO_URI)
-  .then(() => console.log('MongoDB connected successfully'))
-  .catch(err => console.log('MongoDB connection error:', err));
+db.query('SELECT NOW()')
+  .then(res => console.log(`PostgreSQL connected successfully at ${res.rows[0].now}`))
+  .catch(err => console.error('PostgreSQL connection error:', err.message));
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/books', bookRoutes);
 
 app.get('/', (req, res) => {
-  res.send('BiblioTech API is running...');
+  res.send('BiblioTech SQL API is running...');
 });
 
 app.listen(PORT, () => {
