@@ -57,16 +57,6 @@ const seedDatabase = async () => {
     const bookMap = {};
     bookRes.rows.forEach(b => { bookMap[b.title] = b.id; });
 
-    // Insert Book Loans (Lending activity for analytical testing)
-    await client.query(`
-      INSERT INTO book_loans (user_id, book_id, loan_date, due_date, status) VALUES
-      ($1, $2, CURRENT_TIMESTAMP - INTERVAL '10 days', CURRENT_TIMESTAMP + INTERVAL '4 days', 'active'),
-      ($1, $3, CURRENT_TIMESTAMP - INTERVAL '30 days', CURRENT_TIMESTAMP - INTERVAL '16 days', 'returned'),
-      ($4, $2, CURRENT_TIMESTAMP - INTERVAL '5 days', CURRENT_TIMESTAMP + INTERVAL '9 days', 'active');
-    `, [userId, bookMap['The Pragmatic Programmer'], bookMap['Clean Code'], adminId]);
-
-    console.log('Book loans seeded successfully');
-
     // Insert Inventory Logs
     await client.query(`
       INSERT INTO inventory_logs (book_id, change_amount, transaction_type, notes) VALUES

@@ -15,11 +15,10 @@ The project is built using a modern full-stack JavaScript & Relational SQL archi
 - **Normalized Tables**:
   - `users`: User authentication, hashed passwords (bcrypt), role-based control (`admin` / `user`).
   - `books`: Catalog records with constraints, stock levels, and AI summaries.
-  - `book_loans`: User lending patterns and borrow status tracking with FK cascading (`ON DELETE CASCADE`).
   - `inventory_logs`: Dynamic inventory transaction logging via PostgreSQL transactions (`BEGIN`, `COMMIT`, `ROLLBACK`).
 - **Complex SQL Analytics**:
-  - **Window Functions**: `DENSE_RANK() OVER (PARTITION BY genre ORDER BY stock DESC)` for genre availability ranking and `DENSE_RANK() OVER (ORDER BY total_loans DESC)` for overall popularity ranking.
-  - **Aggregations & Subqueries**: Aggregated borrowing volume and inventory adjustment metrics joined dynamically.
+  - **Window Functions**: `DENSE_RANK() OVER (PARTITION BY genre ORDER BY stock DESC)` for genre availability ranking.
+  - **Aggregations & Subqueries**: Inventory adjustment metrics joined dynamically.
 
 ## Prerequisites
 - Node.js (v18+)
@@ -37,7 +36,7 @@ cp .env.example .env
 
 Update `.env` with your actual PostgreSQL connection details (`PGHOST`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`, `PGPORT` or `DATABASE_URL`), JWT Secret, and Gemini API Key.
 
-Seed the database with schema DDL, default users, books, loans, and inventory logs:
+Seed the database with schema DDL, default users, books, and inventory logs:
 ```bash
 npm run seed
 ```

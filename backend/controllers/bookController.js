@@ -7,7 +7,7 @@ exports.getBooks = async (req, res) => {
   try {
     let rows;
     try {
-      // Complex analytical SQL query utilizing LEFT JOINs, subquery aggregations, and Window Functions
+      // Analytical SQL query utilizing LEFT JOINs, subquery aggregations, and Window Functions
       const queryText = `
         SELECT 
           b.id,
@@ -20,22 +20,10 @@ exports.getBooks = async (req, res) => {
           b.ai_summary AS "aiSummary",
           b.created_at AS "createdAt",
           b.updated_at AS "updatedAt",
-          COALESCE(loan_stats.total_loans, 0) AS "totalLoans",
-          COALESCE(loan_stats.active_loans, 0) AS "activeLoans",
           COALESCE(inv_stats.total_inventory_adjustments, 0) AS "totalInventoryAdjustments",
-          -- Window Function 1: Rank stock availability within each genre
-          DENSE_RANK() OVER (PARTITION BY b.genre ORDER BY b.stock DESC, b.id ASC) AS "genreStockRank",
-          -- Window Function 2: Overall popularity rank based on historical borrowing volume
-          DENSE_RANK() OVER (ORDER BY COALESCE(loan_stats.total_loans, 0) DESC, b.id ASC) AS "borrowingPopularityRank"
+          -- Window Function: Rank stock availability within each genre
+          DENSE_RANK() OVER (PARTITION BY b.genre ORDER BY b.stock DESC, b.id ASC) AS "genreStockRank"
         FROM books b
-        LEFT JOIN (
-          SELECT 
-            book_id,
-            COUNT(id) AS total_loans,
-            COUNT(CASE WHEN status = 'active' THEN 1 END) AS active_loans
-          FROM book_loans
-          GROUP BY book_id
-        ) loan_stats ON b.id = loan_stats.book_id
         LEFT JOIN (
           SELECT 
             book_id,
@@ -62,18 +50,8 @@ exports.getBooks = async (req, res) => {
             b.ai_summary AS "aiSummary",
             b.created_at AS "createdAt",
             b.updated_at AS "updatedAt",
-            COALESCE(loan_stats.total_loans, 0) AS "totalLoans",
-            COALESCE(loan_stats.active_loans, 0) AS "activeLoans",
             COALESCE(inv_stats.total_inventory_adjustments, 0) AS "totalInventoryAdjustments"
           FROM books b
-          LEFT JOIN (
-            SELECT 
-              book_id,
-              COUNT(id) AS total_loans,
-              COUNT(CASE WHEN status = 'active' THEN 1 END) AS active_loans
-            FROM book_loans
-            GROUP BY book_id
-          ) loan_stats ON b.id = loan_stats.book_id
           LEFT JOIN (
             SELECT 
               book_id,
@@ -104,17 +82,6 @@ exports.getBooks = async (req, res) => {
             }
             item.genreStockRank = currentRank;
           });
-        });
-
-        const popularitySorted = [...rows].sort((a, b) => b.totalLoans - a.totalLoans || a.id - b.id);
-        let popRank = 0;
-        let lastLoans = null;
-        popularitySorted.forEach(item => {
-          if (item.totalLoans !== lastLoans) {
-            popRank++;
-            lastLoans = item.totalLoans;
-          }
-          item.borrowingPopularityRank = popRank;
         });
       } else {
         throw windowErr;
@@ -263,7 +230,7 @@ exports.summarizeBook = async (req, res) => {
       return res.status(400).json({ message: 'Title and author are required' });
     }
 
-    // Advanced analytical SQL query to extract book metrics, borrowing volume, and category metrics for Gemini prompt
+    // Analytical SQL query to extract book metrics and category metrics for Gemini prompt
     const analyticsQuery = `
       SELECT 
         b.id,
@@ -271,17 +238,11 @@ exports.summarizeBook = async (req, res) => {
         b.author,
         b.genre,
         b.stock,
-        COALESCE(loan_summary.total_borrowed, 0) AS total_borrowed,
         genre_metrics.avg_genre_stock,
         genre_metrics.genre_book_count,
-        -- Window Function: Calculate borrow popularity rank across all books
-        DENSE_RANK() OVER (ORDER BY COALESCE(loan_summary.total_borrowed, 0) DESC) AS overall_borrow_rank
+        -- Window Function: Calculate stock rank within genre
+        DENSE_RANK() OVER (PARTITION BY b.genre ORDER BY b.stock DESC, b.id ASC) AS genre_stock_rank
       FROM books b
-      LEFT JOIN (
-        SELECT book_id, COUNT(*) AS total_borrowed
-        FROM book_loans
-        GROUP BY book_id
-      ) loan_summary ON b.id = loan_summary.book_id
       LEFT JOIN (
         SELECT 
           genre, 
@@ -307,15 +268,9 @@ exports.summarizeBook = async (req, res) => {
             b.author,
             b.genre,
             b.stock,
-            COALESCE(loan_summary.total_borrowed, 0) AS total_borrowed,
             genre_metrics.avg_genre_stock,
             genre_metrics.genre_book_count
           FROM books b
-          LEFT JOIN (
-            SELECT book_id, COUNT(*) AS total_borrowed
-            FROM book_loans
-            GROUP BY book_id
-          ) loan_summary ON b.id = loan_summary.book_id
           LEFT JOIN (
             SELECT 
               genre, 
@@ -330,7 +285,7 @@ exports.summarizeBook = async (req, res) => {
         const analyticsRes = await db.query(fallbackAnalyticsQuery, [bookTitle.trim(), `%${author.trim()}%`]);
         metrics = analyticsRes.rows[0];
         if (metrics) {
-          metrics.overall_borrow_rank = 1;
+          metrics.genre_stock_rank = 1;
         }
       } else {
         throw windowErr;
@@ -346,7 +301,7 @@ exports.summarizeBook = async (req, res) => {
         
         let contextNote = '';
         if (metrics) {
-          contextNote = ` (Analytical Context: Genre "${metrics.genre}" with ${metrics.genre_book_count || 1} catalog titles, ${metrics.total_borrowed || 0} total loans, borrow rank #${metrics.overall_borrow_rank || 1}).`;
+          contextNote = ` (Analytical Context: Genre "${metrics.genre}" with ${metrics.genre_book_count || 1} catalog titles and average stock of ${metrics.avg_genre_stock || metrics.stock} units).`;
         }
 
         const prompt = `Write a structured 3-sentence summary of the book "${bookTitle}" by ${author}.${contextNote} Do not include any extra text.`;

@@ -2,7 +2,6 @@
 -- Translating document schema to normalized relational SQL schema with Foreign Keys, Cascading Rules, and Indexes.
 
 DROP TABLE IF EXISTS inventory_logs CASCADE;
-DROP TABLE IF EXISTS book_loans CASCADE;
 DROP TABLE IF EXISTS books CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
@@ -37,29 +36,12 @@ CREATE INDEX idx_books_genre ON books(genre);
 CREATE INDEX idx_books_isbn ON books(isbn);
 CREATE INDEX idx_books_created_at ON books(created_at DESC);
 
--- 3. Book Loans Table (Tracking user lending patterns & history)
-CREATE TABLE book_loans (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    book_id INTEGER NOT NULL REFERENCES books(id) ON DELETE CASCADE,
-    loan_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    due_date TIMESTAMP WITH TIME ZONE DEFAULT (CURRENT_TIMESTAMP + INTERVAL '14 days'),
-    return_date TIMESTAMP WITH TIME ZONE,
-    status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'returned', 'overdue')),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- Indexes for foreign keys and analytical lending queries
-CREATE INDEX idx_loans_user_id ON book_loans(user_id);
-CREATE INDEX idx_loans_book_id ON book_loans(book_id);
-CREATE INDEX idx_loans_status ON book_loans(status);
-
--- 4. Inventory Logs Table (Dynamic inventory operations tracking)
+-- 3. Inventory Logs Table (Dynamic inventory operations tracking)
 CREATE TABLE inventory_logs (
     id SERIAL PRIMARY KEY,
     book_id INTEGER NOT NULL REFERENCES books(id) ON DELETE CASCADE,
     change_amount INTEGER NOT NULL,
-    transaction_type VARCHAR(50) NOT NULL CHECK (transaction_type IN ('initial_stock', 'addition', 'reduction', 'loan', 'return')),
+    transaction_type VARCHAR(50) NOT NULL CHECK (transaction_type IN ('initial_stock', 'addition', 'reduction')),
     notes TEXT DEFAULT '',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
