@@ -169,18 +169,38 @@ exports.addBook = async (req, res) => {
 exports.updateBook = async (req, res) => {
   const client = await db.getClient();
   try {
-    const { title, author, genre, isbn, stock } = req.body;
     const bookId = parseInt(req.params.id, 10);
+    if (isNaN(bookId)) {
+      client.release();
+      return res.status(400).json({ message: 'Invalid book ID' });
+    }
 
-    // Check if book exists
-    const checkResult = await client.query('SELECT stock FROM books WHERE id = $1', [bookId]);
+    const { title, author, genre, isbn, stock } = req.body;
+
+    // Check if book exists and fetch all current attributes
+    const checkResult = await client.query('SELECT * FROM books WHERE id = $1', [bookId]);
     if (checkResult.rows.length === 0) {
       client.release();
       return res.status(404).json({ message: 'Book not found' });
     }
 
-    const previousStock = checkResult.rows[0].stock;
-    const newStock = parseInt(stock, 10);
+    const existingBook = checkResult.rows[0];
+    const updatedTitle = title !== undefined ? title : existingBook.title;
+    const updatedAuthor = author !== undefined ? author : existingBook.author;
+    const updatedGenre = genre !== undefined ? genre : existingBook.genre;
+    const updatedIsbn = isbn !== undefined ? isbn : existingBook.isbn;
+    
+    let newStock = existingBook.stock;
+    if (stock !== undefined) {
+      const parsedStock = parseInt(stock, 10);
+      if (isNaN(parsedStock) || parsedStock < 0) {
+        client.release();
+        return res.status(400).json({ message: 'Stock must be a non-negative number' });
+      }
+      newStock = parsedStock;
+    }
+
+    const previousStock = existingBook.stock;
     const stockDiff = newStock - previousStock;
 
     await client.query('BEGIN');
@@ -189,9 +209,9 @@ exports.updateBook = async (req, res) => {
       UPDATE books
       SET title = $1, author = $2, genre = $3, isbn = $4, stock = $5, updated_at = CURRENT_TIMESTAMP
       WHERE id = $6
-      RETURNING id, id AS "_id", title, author, genre, isbn, stock, ai_summary AS "aiSummary", created_at AS "createdAt";
+      RETURNING id, id AS "_id", title, author, genre, isbn, stock, ai_summary AS "aiSummary", created_at AS "createdAt", updated_at AS "updatedAt";
     `;
-    const updateResult = await client.query(updateQuery, [title, author, genre, isbn, newStock, bookId]);
+    const updateResult = await client.query(updateQuery, [updatedTitle, updatedAuthor, updatedGenre, updatedIsbn, newStock, bookId]);
 
     // Log inventory adjustment if stock changed
     if (stockDiff !== 0) {
@@ -206,7 +226,7 @@ exports.updateBook = async (req, res) => {
     await client.query('COMMIT');
     res.json(updateResult.rows[0]);
   } catch (err) {
-    await client.query('ROLLBACK');
+    try { await client.query('ROLLBACK'); } catch (_) {}
     console.error('Error updating book via SQL:', err);
     res.status(500).send('Server Error');
   } finally {

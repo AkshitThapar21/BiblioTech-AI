@@ -30,6 +30,12 @@ const BookCatalog = () => {
     setBooks([newBook, ...books]);
   };
 
+  const handleBookUpdated = (updatedBook) => {
+    setBooks(prev =>
+      prev.map(b => (b._id === updatedBook._id || b.id === updatedBook.id ? { ...b, ...updatedBook } : b))
+    );
+  };
+
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this book?')) {
       try {
@@ -68,7 +74,7 @@ const BookCatalog = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {books.map(book => (
-            <BookCard key={book._id} book={book} onDelete={handleDelete} />
+            <BookCard key={book._id || book.id} book={book} onDelete={handleDelete} onUpdateBook={handleBookUpdated} />
           ))}
         </div>
       )}
