@@ -34,21 +34,21 @@ const seedDatabase = async () => {
 
     // Insert Books
     const bookRes = await client.query(`
-      INSERT INTO books (title, author, genre, isbn, stock, ai_summary) VALUES
-      ('The Pragmatic Programmer', 'Andrew Hunt and David Thomas', 'Software Engineering', '978-0135957059', 5, 'A timeless guide for software developers looking to hone their craft.'),
-      ('Clean Code', 'Robert C. Martin', 'Software Engineering', '978-0132350884', 2, 'Essential principles for writing readable, maintainable, and robust code.'),
-      ('Design Patterns', 'Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides', 'Software Engineering', '978-0201633610', 4, 'Catalog of reusable object-oriented software patterns.'),
-      ('Dune', 'Frank Herbert', 'Science Fiction', '978-0441172719', 8, 'Masterpiece of science fiction set in a distant desert world.'),
-      ('To Kill a Mockingbird', 'Harper Lee', 'Classic Literature', '978-0061120084', 7, 'A profound examination of racial injustice and childhood innocence in the American South.'),
-      ('1984', 'George Orwell', 'Dystopian Fiction', '978-0451524935', 10, 'A chilling portrait of a totalitarian regime where mass surveillance and thoughtcrime rule.'),
-      ('The Great Gatsby', 'F. Scott Fitzgerald', 'Classic Literature', '978-0743273565', 6, 'A haunting critique of the American Dream set in the Roaring Twenties amid glittering parties.'),
-      ('The Hobbit', 'J.R.R. Tolkien', 'Fantasy', '978-0547928227', 9, 'The epic adventure of Bilbo Baggins as he journeys with dwarves to reclaim the Lonely Mountain from Smaug.'),
-      ('Pride and Prejudice', 'Jane Austen', 'Classic Literature', '978-0141439518', 8, 'A romantic masterpiece exploring manners, social standing, and misunderstandings in Regency England.'),
-      ('Sapiens: A Brief History of Humankind', 'Yuval Noah Harari', 'Non-Fiction', '978-0062316097', 12, 'An expansive survey tracing the evolutionary, cognitive, and social milestones of humankind.'),
-      ('Atomic Habits', 'James Clear', 'Self-Help', '978-0735211292', 15, 'A practical framework demonstrating how tiny 1% changes accumulate into remarkable results.'),
-      ('The Catcher in the Rye', 'J.D. Salinger', 'Fiction', '978-0316769488', 5, 'Holden Caulfields iconic narrative exploring teenage disillusionment, vulnerability, and identity.'),
-      ('Fahrenheit 451', 'Ray Bradbury', 'Dystopian Fiction', '978-1451673319', 8, 'A cautionary tale set in a bleak future where books are outlawed and firemen burn all contraband ideas.'),
-      ('The Alchemist', 'Paulo Coelho', 'Philosophical Fiction', '978-0062315007', 11, 'An inspiring allegorical tale following Andalusian shepherd boy Santiago in pursuit of his Personal Legend.')
+      INSERT INTO books (title, author, genre, isbn, stock) VALUES
+      ('The Pragmatic Programmer', 'Andrew Hunt and David Thomas', 'Software Engineering', '978-0135957059', 5),
+      ('Clean Code', 'Robert C. Martin', 'Software Engineering', '978-0132350884', 2),
+      ('Design Patterns', 'Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides', 'Software Engineering', '978-0201633610', 4),
+      ('Dune', 'Frank Herbert', 'Science Fiction', '978-0441172719', 8),
+      ('To Kill a Mockingbird', 'Harper Lee', 'Classic Literature', '978-0061120084', 7),
+      ('1984', 'George Orwell', 'Dystopian Fiction', '978-0451524935', 10),
+      ('The Great Gatsby', 'F. Scott Fitzgerald', 'Classic Literature', '978-0743273565', 6),
+      ('The Hobbit', 'J.R.R. Tolkien', 'Fantasy', '978-0547928227', 9),
+      ('Pride and Prejudice', 'Jane Austen', 'Classic Literature', '978-0141439518', 8),
+      ('Sapiens: A Brief History of Humankind', 'Yuval Noah Harari', 'Non-Fiction', '978-0062316097', 12),
+      ('Atomic Habits', 'James Clear', 'Self-Help', '978-0735211292', 15),
+      ('The Catcher in the Rye', 'J.D. Salinger', 'Fiction', '978-0316769488', 5),
+      ('Fahrenheit 451', 'Ray Bradbury', 'Dystopian Fiction', '978-1451673319', 8),
+      ('The Alchemist', 'Paulo Coelho', 'Philosophical Fiction', '978-0062315007', 11)
       RETURNING id, title, stock;
     `);
 

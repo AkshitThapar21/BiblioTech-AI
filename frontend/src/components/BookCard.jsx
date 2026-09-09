@@ -5,7 +5,7 @@ import axios from '../api/axios';
 
 const BookCard = ({ book, onDelete, onUpdateStock }) => {
   const { user } = useContext(AuthContext);
-  const [summary, setSummary] = useState(book.aiSummary || null);
+  const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(false);
 

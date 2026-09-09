@@ -76,21 +76,21 @@ async function createInMemoryDb() {
     `, ['admin', adminPass, 'testuser', userPass]);
 
     await client.query(`
-      INSERT INTO books (title, author, genre, isbn, stock, ai_summary) VALUES
-      ('The Pragmatic Programmer', 'Andrew Hunt and David Thomas', 'Software Engineering', '978-0135957059', 5, NULL),
-      ('Clean Code', 'Robert C. Martin', 'Software Engineering', '978-0132350884', 2, NULL),
-      ('Design Patterns', 'Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides', 'Software Engineering', '978-0201633610', 4, NULL),
-      ('Dune', 'Frank Herbert', 'Science Fiction', '978-0441172719', 8, NULL),
-      ('To Kill a Mockingbird', 'Harper Lee', 'Classic Literature', '978-0061120084', 7, NULL),
-      ('1984', 'George Orwell', 'Dystopian Fiction', '978-0451524935', 10, NULL),
-      ('The Great Gatsby', 'F. Scott Fitzgerald', 'Classic Literature', '978-0743273565', 6, NULL),
-      ('The Hobbit', 'J.R.R. Tolkien', 'Fantasy', '978-0547928227', 9, NULL),
-      ('Pride and Prejudice', 'Jane Austen', 'Classic Literature', '978-0141439518', 8, NULL),
-      ('Sapiens: A Brief History of Humankind', 'Yuval Noah Harari', 'Non-Fiction', '978-0062316097', 12, NULL),
-      ('Atomic Habits', 'James Clear', 'Self-Help', '978-0735211292', 15, NULL),
-      ('The Catcher in the Rye', 'J.D. Salinger', 'Fiction', '978-0316769488', 5, NULL),
-      ('Fahrenheit 451', 'Ray Bradbury', 'Dystopian Fiction', '978-1451673319', 8, NULL),
-      ('The Alchemist', 'Paulo Coelho', 'Philosophical Fiction', '978-0062315007', 11, NULL);
+      INSERT INTO books (title, author, genre, isbn, stock) VALUES
+      ('The Pragmatic Programmer', 'Andrew Hunt and David Thomas', 'Software Engineering', '978-0135957059', 5),
+      ('Clean Code', 'Robert C. Martin', 'Software Engineering', '978-0132350884', 2),
+      ('Design Patterns', 'Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides', 'Software Engineering', '978-0201633610', 4),
+      ('Dune', 'Frank Herbert', 'Science Fiction', '978-0441172719', 8),
+      ('To Kill a Mockingbird', 'Harper Lee', 'Classic Literature', '978-0061120084', 7),
+      ('1984', 'George Orwell', 'Dystopian Fiction', '978-0451524935', 10),
+      ('The Great Gatsby', 'F. Scott Fitzgerald', 'Classic Literature', '978-0743273565', 6),
+      ('The Hobbit', 'J.R.R. Tolkien', 'Fantasy', '978-0547928227', 9),
+      ('Pride and Prejudice', 'Jane Austen', 'Classic Literature', '978-0141439518', 8),
+      ('Sapiens: A Brief History of Humankind', 'Yuval Noah Harari', 'Non-Fiction', '978-0062316097', 12),
+      ('Atomic Habits', 'James Clear', 'Self-Help', '978-0735211292', 15),
+      ('The Catcher in the Rye', 'J.D. Salinger', 'Fiction', '978-0316769488', 5),
+      ('Fahrenheit 451', 'Ray Bradbury', 'Dystopian Fiction', '978-1451673319', 8),
+      ('The Alchemist', 'Paulo Coelho', 'Philosophical Fiction', '978-0062315007', 11);
     `);
 
     client.release();

@@ -17,7 +17,6 @@ exports.getBooks = async (req, res) => {
           b.genre,
           b.isbn,
           b.stock,
-          b.ai_summary AS "aiSummary",
           b.created_at AS "createdAt",
           b.updated_at AS "updatedAt",
           COALESCE(inv_stats.total_inventory_adjustments, 0) AS "totalInventoryAdjustments",
@@ -47,7 +46,6 @@ exports.getBooks = async (req, res) => {
             b.genre,
             b.isbn,
             b.stock,
-            b.ai_summary AS "aiSummary",
             b.created_at AS "createdAt",
             b.updated_at AS "updatedAt",
             COALESCE(inv_stats.total_inventory_adjustments, 0) AS "totalInventoryAdjustments"
@@ -108,7 +106,7 @@ exports.addBook = async (req, res) => {
     const bookInsertQuery = `
       INSERT INTO books (title, author, genre, isbn, stock)
       VALUES ($1, $2, $3, $4, $5)
-      RETURNING id, id AS "_id", title, author, genre, isbn, stock, ai_summary AS "aiSummary", created_at AS "createdAt";
+      RETURNING id, id AS "_id", title, author, genre, isbn, stock, created_at AS "createdAt";
     `;
     const bookResult = await client.query(bookInsertQuery, [title, author, genre, isbn, initialStock]);
     const newBook = bookResult.rows[0];
@@ -176,7 +174,7 @@ exports.updateBook = async (req, res) => {
       UPDATE books
       SET title = $1, author = $2, genre = $3, isbn = $4, stock = $5, updated_at = CURRENT_TIMESTAMP
       WHERE id = $6
-      RETURNING id, id AS "_id", title, author, genre, isbn, stock, ai_summary AS "aiSummary", created_at AS "createdAt", updated_at AS "updatedAt";
+      RETURNING id, id AS "_id", title, author, genre, isbn, stock, created_at AS "createdAt", updated_at AS "updatedAt";
     `;
     const updateResult = await client.query(updateQuery, [updatedTitle, updatedAuthor, updatedGenre, updatedIsbn, newStock, bookId]);
 
@@ -319,11 +317,6 @@ exports.summarizeBook = async (req, res) => {
 
     if (!summary) {
       summary = `"${bookTitle}" by ${author} is a highly regarded title in ${metrics?.genre || 'our catalog'}. With current stock availability at ${metrics?.stock ?? 'good'} units, it continues to engage readers and provide valuable perspective. A recommended read for enthusiasts in this genre.`;
-    }
-
-    // Persist ai_summary back into PostgreSQL if book matches
-    if (metrics) {
-      await db.query('UPDATE books SET ai_summary = $1 WHERE id = $2', [summary, metrics.id]);
     }
 
     res.json({ summary });
